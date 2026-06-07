@@ -45,6 +45,7 @@ export function Create() {
   const [step, setStep] = useState(0)
   const [loadingLookups, setLoadingLookups] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [createdCode, setCreatedCode] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState('')
 
@@ -70,6 +71,31 @@ export function Create() {
   const [ward, setWard] = useState<Option | null>(null)
   const [locationDesc, setLocationDesc] = useState('')
   const [certified, setCertified] = useState(false)
+  const [attachments, setAttachments] = useState<File[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Which personal fields each confidentiality level shares — mirrors the
+  // native CreateIssue.updateConfidentiality switch.
+  const sharedFields: {key: string; shared: boolean}[] = useMemo(() => {
+    const all = conf === 'non_confidential'
+    const some = conf !== 'anonymous'
+    return [
+      {key: 'name', shared: all},
+      {key: 'age', shared: some},
+      {key: 'gender', shared: some},
+      {key: 'citizen_group_1', shared: some},
+      {key: 'citizen_group_2', shared: some},
+    ]
+  }, [conf])
+
+  const onPickFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(e.target.files || [])
+    if (picked.length) setAttachments(prev => [...prev, ...picked])
+    e.target.value = ''
+  }
+
+  const removeAttachment = (idx: number) =>
+    setAttachments(prev => prev.filter((_, i) => i !== idx))
 
   useEffect(() => {
     ;(async () => {
@@ -161,7 +187,20 @@ export function Create() {
     if (locationDesc) payload.location_description = locationDesc
     try {
       const res = await createIssue(payload)
-      const data = (res as {data?: {tracking_code?: string}})?.data
+      const data = (res as {data?: {id?: number; tracking_code?: string}})?.data
+      // Upload any attachments to the freshly-created issue.
+      const newId = data?.id
+      if (newId && attachments.length) {
+        setUploading(true)
+        for (const file of attachments) {
+          try {
+            await addAttachment(newId, file)
+          } catch {
+            // A failed upload shouldn't block the success screen.
+          }
+        }
+        setUploading(false)
+      }
       setCreatedCode(data?.tracking_code || tracking)
     } catch (e: unknown) {
       const err = e as {data?: unknown}
@@ -267,10 +306,35 @@ export function Create() {
                   {conf === key && <Check size={20} color="#24c38b" />}
                 </button>
               ))}
+
+              {/* Shared information — reflects what the chosen level reveals */}
+              <div className="mt-5 rounded-xl border border-[#dedede] bg-white p-4 shadow-sm">
+                <p className="mb-3 text-base font-bold text-[#1f2937]">
+                  {t('shared_information')}
+                </p>
+                <div className="flex flex-col gap-2.5">
+                  {sharedFields.map(({key, shared}) => (
+                    <div key={key} className="flex items-center gap-2.5">
+                      {shared ? (
+                        <CheckCircle2 size={20} color="#24c38b" />
+                      ) : (
+                        <Circle size={20} color="#9da3ae" />
+                      )}
+                      <span
+                        className="text-sm transition-colors"
+                        style={{color: shared ? '#374151' : '#9da3ae'}}
+                      >
+                        {t(key)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <CustomButton
                 label={t('save_and_continue')}
                 onClick={() => setStep(1)}
-                className="mt-2"
+                className="mt-4"
               />
             </div>
           )}
@@ -345,6 +409,85 @@ export function Create() {
                   className="w-full resize-none rounded-[10px] border border-[#dedede] bg-white px-4 py-3 text-[#4A4A4A] outline-none focus:border-[#24c38b]"
                 />
               </div>
+
+              {/* Attachments */}
+              <div className="mb-4">
+                <p className="mb-1 text-base font-bold text-[#4A4A4A]">
+                  {t('include_attachments_title')}
+                </p>
+                <p className="mb-3 text-sm text-[#707070]">
+                  {t('include_attachments_subtitle')}
+                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,video/*,application/pdf,.doc,.docx"
+                  onChange={onPickFiles}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex w-full flex-col items-center gap-2 rounded-[10px] border-2 border-dashed border-[#dedede] bg-white px-4 py-6 text-center transition hover:border-[#24c38b]"
+                >
+                  <UploadCloud size={28} color="#24c38b" />
+                  <span className="text-sm font-semibold text-[#1f2937]">
+                    {t('attach_other_files')}
+                  </span>
+                  <span className="text-xs text-[#707070]">
+                    {t('attach_other_files_description')}
+                  </span>
+                  <span className="mt-1 rounded-full bg-[#e1f2eb] px-4 py-1.5 text-sm font-semibold text-[#24c38b]">
+                    {t('browse_files')}
+                  </span>
+                </button>
+
+                {attachments.length > 0 && (
+                  <div className="mt-3 flex flex-col gap-2">
+                    {attachments.map((file, idx) => {
+                      const isImg = file.type.startsWith('image/')
+                      const url = isImg ? URL.createObjectURL(file) : ''
+                      return (
+                        <div
+                          key={`${file.name}-${idx}`}
+                          className="flex items-center gap-3 rounded-[10px] border border-[#dedede] bg-white p-2.5"
+                        >
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#f3f4f6]">
+                            {isImg ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={url}
+                                alt={file.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <FileText size={20} color="#9ca3af" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-[#1f2937]">
+                              {file.name}
+                            </p>
+                            <p className="text-xs text-[#707070]">
+                              {(file.size / 1024).toFixed(0)} KB
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeAttachment(idx)}
+                            aria-label={t('remove')}
+                            className="flex h-7 w-7 items-center justify-center rounded-full text-[#9ca3af] transition hover:bg-[#f3f4f6] hover:text-[#ef6a78]"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
               <CustomButton
                 label={t('save_and_continue')}
                 onClick={() => setStep(2)}
@@ -433,6 +576,37 @@ export function Create() {
                 <SummaryRow label={t('description')} value={description} />
               </div>
 
+              {attachments.length > 0 && (
+                <div className="mb-4 rounded-xl border border-[#dedede] bg-white p-4">
+                  <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#707070]">
+                    {t('attachments')} ({attachments.length})
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {attachments.map((file, idx) => {
+                      const isImg = file.type.startsWith('image/')
+                      const url = isImg ? URL.createObjectURL(file) : ''
+                      return (
+                        <div
+                          key={`sum-${file.name}-${idx}`}
+                          className="flex h-14 w-20 items-center justify-center overflow-hidden rounded-lg border border-[#e5e7eb] bg-[#f3f4f6]"
+                        >
+                          {isImg ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={url}
+                              alt={file.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <FileText size={20} color="#9ca3af" />
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="mb-4 rounded-xl border border-[#dedede] bg-white p-4">
                 <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[#707070]">
                   {t('geo_location')}
@@ -463,7 +637,13 @@ export function Create() {
               )}
 
               <CustomButton
-                label={submitting ? t('saving') : t('submit_case')}
+                label={
+                  uploading
+                    ? t('uploading_attachments')
+                    : submitting
+                      ? t('saving')
+                      : t('submit_case')
+                }
                 onClick={onSubmit}
                 disabled={!canSubmit || !certified || submitting}
                 className="mt-1"
