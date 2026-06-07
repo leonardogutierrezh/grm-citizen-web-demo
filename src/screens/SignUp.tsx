@@ -158,7 +158,7 @@ export function SignUp({onBack}: {onBack: () => void}) {
           error={errors.confirmPassword}
         />
         <p className="mb-2 text-xs text-[#707070]">{t('password_hint')}</p>
-        <CustomButton label={t('sign_up')} onClick={onSubmit} className="mx-0 mt-2" />
+        <CustomButton label={t('sign_up')} onClick={onSubmit} className="mt-2" />
       </div>
     </div>
   )

@@ -46,12 +46,14 @@ export function Home() {
       <h1 className="px-7 pt-4 text-2xl font-bold text-[#1f2937]">
         {t('welcome')}
       </h1>
-      <CustomButton
-        label={t('report_new_grievance')}
-        onClick={() => navigate('create')}
-        icon={<PlusCircle size={20} />}
-        className="mt-3"
-      />
+      <div className="px-4">
+        <CustomButton
+          label={t('report_new_grievance')}
+          onClick={() => navigate('create')}
+          icon={<PlusCircle size={20} />}
+          className="mt-3"
+        />
+      </div>
       <div className="mt-6 px-3">
         <div className="mb-3 flex items-center justify-between px-4">
           <h2 className="text-lg font-bold text-[#1f2937]">
