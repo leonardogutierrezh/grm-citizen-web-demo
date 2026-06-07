@@ -1,0 +1,73 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: #24c38b;
+  --color-tertiary: #458d74;
+  --color-primary200: #e1f2eb;
+  --color-darkgrey: #4a4a4a;
+  --color-inprogress: #f5ba74;
+  --color-lightgray: #dedede;
+  --color-grmerror: #ef6a78;
+  --color-secondary2: #707070;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+/* Desktop backdrop behind the phone */
+body {
+  background: radial-gradient(
+    circle at 50% 0%,
+    #1f2937 0%,
+    #0f172a 55%,
+    #020617 100%
+  );
+  min-height: 100vh;
+}
+
+/* Hide scrollbars inside the phone for a native feel */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.animate-screen-in {
+  animation: screen-in 0.22s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
