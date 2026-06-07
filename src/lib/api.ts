@@ -141,6 +141,18 @@ export function listAttachments(id: number | string, page = 1) {
   )
 }
 
+// Uploads a single file to an existing issue. The backend (DRF) reads the
+// "file" multipart field — see addIssueAttachment in the native app.
+export function addAttachment(id: number | string, file: File) {
+  const form = new FormData()
+  form.append('file', file)
+  return apiRequest(`/issues/${id}/add-attachment`, {
+    method: 'POST',
+    body: form,
+    isForm: true,
+  })
+}
+
 // ---- Lookups ----
 export const getIssueTypes = () => apiRequest<Paginated<Lookup>>('/issues/issue-types/')
 export const getIssueSubtypes = () =>
@@ -167,18 +179,28 @@ export type Issue = {
   tracking_code?: string
   intake_date?: string
   description?: string
-  status?: {name?: string} | null
+  status?: {
+    name?: string
+    initial_status?: boolean
+    open_status?: boolean
+    final_status?: boolean
+  } | null
   issue_type?: {name?: string} | null
   category?: {name?: string} | null
   administrative_region?: {name?: string} | null
   rating?: number | null
   resolution_date?: string | null
+  updated_date?: string | null
+  research_result?: string | null
   [k: string]: unknown
 }
 export type Comment = {
   id: number
-  text: string
+  text?: string
+  comment?: string
   created_date?: string
+  is_mine?: boolean
+  author_name?: string
   user?: {name?: string; username?: string} | null
   [k: string]: unknown
 }

@@ -3,6 +3,7 @@
 import {Home as HomeIcon, User} from 'lucide-react'
 import {useNav} from '@/context/NavContext'
 import {useI18n} from '@/lib/i18n'
+import {ErrorBoundary} from '@/components/ErrorBoundary'
 import {Home} from '@/screens/Home'
 import {AllIssues} from '@/screens/AllIssues'
 import {IssueDetail} from '@/screens/IssueDetail'
@@ -12,7 +13,7 @@ import {Profile} from '@/screens/Profile'
 const TAB_SCREENS = ['home', 'profile', 'allIssues']
 
 export function App() {
-  const {current, tab, setTab} = useNav()
+  const {current, tab, setTab, resetTo} = useNav()
   const {t} = useI18n()
 
   const showTabs = TAB_SCREENS.includes(current.screen)
@@ -36,8 +37,21 @@ export function App() {
 
   return (
     <div className="flex h-full flex-col">
-      <div key={current.screen + JSON.stringify(current.params)} className="flex-1 overflow-hidden">
-        {renderScreen()}
+      <div className="flex-1 overflow-hidden">
+        <ErrorBoundary
+          resetKey={current.screen + JSON.stringify(current.params)}
+          onReset={() => {
+            setTab('home')
+            resetTo('home')
+          }}
+        >
+          <div
+            key={current.screen + JSON.stringify(current.params)}
+            className="h-full"
+          >
+            {renderScreen()}
+          </div>
+        </ErrorBoundary>
       </div>
 
       {showTabs && (

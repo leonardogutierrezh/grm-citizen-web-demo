@@ -1,18 +1,23 @@
 'use client'
 
-import {useEffect, useMemo, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {
   ShieldCheck,
   Eye,
   EyeOff,
   CheckCircle2,
+  Circle,
   Lock,
   Check,
+  UploadCloud,
+  X,
+  FileText,
 } from 'lucide-react'
-import {Header, CustomButton, Spinner, Field} from '@/components/ui'
+import {Header, CustomButton, Spinner} from '@/components/ui'
 import {Dropdown, Option} from '@/components/Dropdown'
 import {
   Lookup,
+  addAttachment,
   createIssue,
   getComponents,
   getIssueCategories,
