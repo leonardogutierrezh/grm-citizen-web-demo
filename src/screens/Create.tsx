@@ -170,7 +170,7 @@ export function Create() {
             {createdCode}
           </p>
         </div>
-        <CustomButton label={t('ok')} onClick={finish} className="w-48" />
+        <CustomButton label={t('ok')} onClick={finish} fullWidth={false} className="w-48" />
       </div>
     )
   }
@@ -246,7 +246,7 @@ export function Create() {
               <CustomButton
                 label={t('save_and_continue')}
                 onClick={() => setStep(1)}
-                className="mx-0 mt-2"
+                className="mt-2"
               />
             </div>
           )}
@@ -325,7 +325,7 @@ export function Create() {
                 label={t('save_and_continue')}
                 onClick={() => setStep(2)}
                 disabled={!issueType || !subType || !category || !description}
-                className="mx-0 mt-2"
+                className="mt-2"
               />
             </div>
           )}
@@ -370,7 +370,7 @@ export function Create() {
                 label={t('save_and_continue')}
                 onClick={() => setStep(3)}
                 disabled={!region}
-                className="mx-0 mt-2"
+                className="mt-2"
               />
             </div>
           )}
@@ -442,7 +442,7 @@ export function Create() {
                 label={submitting ? t('saving') : t('submit_case')}
                 onClick={onSubmit}
                 disabled={!canSubmit || !certified || submitting}
-                className="mx-0 mt-1"
+                className="mt-1"
               />
             </div>
           )}

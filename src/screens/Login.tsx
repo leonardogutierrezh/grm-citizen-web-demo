@@ -74,7 +74,7 @@ export function Login({onGoSignUp}: {onGoSignUp: () => void}) {
           }
         />
 
-        <CustomButton label={t('login')} onClick={onLogin} className="mx-0 mt-2" />
+        <CustomButton label={t('login')} onClick={onLogin} className="mt-2" />
 
         <p className="mt-6 text-center text-[15px] text-[#707070]">
           {t('dont_have_account')}{' '}

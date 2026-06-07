@@ -102,7 +102,7 @@ export function Profile() {
             onClick={signOut}
             icon={<LogOut size={18} />}
             backgroundColor="#ef6a78"
-            className="mx-0 mt-6"
+            className="mt-6"
           />
         </div>
       )}

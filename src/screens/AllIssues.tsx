@@ -37,12 +37,14 @@ export function AllIssues() {
             />
           ))}
           {hasNext && (
-            <CustomButton
-              label={loadingMore ? t('load_more') : t('view_all')}
-              onClick={loadMore}
-              outline
-              disabled={loadingMore}
-            />
+            <div className="px-4">
+              <CustomButton
+                label={loadingMore ? t('load_more') : t('view_all')}
+                onClick={loadMore}
+                outline
+                disabled={loadingMore}
+              />
+            </div>
           )}
           {!hasNext && (
             <p className="py-4 text-center text-sm text-[#9ca3af]">

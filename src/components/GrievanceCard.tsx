@@ -29,7 +29,7 @@ export function GrievanceCard({
       onClick={onClick}
       className="mx-4 my-1.5 flex w-[calc(100%-2rem)] items-center rounded-xl bg-white p-4 text-left shadow-[0_2px_4px_rgba(0,0,0,0.08)] transition active:scale-[0.99]"
     >
-      <div className="flex flex-1 items-center">
+      <div className="flex min-w-0 flex-1 items-center">
         <div
           className="mr-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
           style={{backgroundColor: category.color}}

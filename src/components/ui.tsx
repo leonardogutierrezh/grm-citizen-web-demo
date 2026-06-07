@@ -25,6 +25,7 @@ type ButtonProps = {
   outline?: boolean
   className?: string
   type?: 'button' | 'submit'
+  fullWidth?: boolean
 }
 
 export function CustomButton({
@@ -37,13 +38,14 @@ export function CustomButton({
   outline,
   className = '',
   type = 'button',
+  fullWidth = true,
 }: ButtonProps) {
   return (
     <button
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={`mx-4 my-2 flex items-center justify-center gap-2 rounded-[10px] px-4 py-3.5 text-base font-semibold transition active:scale-[0.98] disabled:opacity-50 ${className}`}
+      className={`my-2 flex ${fullWidth ? 'w-full' : ''} items-center justify-center gap-2 rounded-[10px] px-4 py-3.5 text-base font-semibold transition active:scale-[0.98] disabled:opacity-50 ${className}`}
       style={
         outline
           ? {
