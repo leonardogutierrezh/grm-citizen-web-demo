@@ -24,6 +24,7 @@ import {
 } from '@/lib/api'
 import {useI18n} from '@/lib/i18n'
 import {useNav} from '@/context/NavContext'
+import {useAuth} from '@/context/AuthContext'
 
 type Conf = 'non_confidential' | 'confidential' | 'anonymous'
 
@@ -34,6 +35,7 @@ function toOpt(l: Lookup): Option {
 export function Create() {
   const {t} = useI18n()
   const {resetTo, goBack, setTab} = useNav()
+  const {session} = useAuth()
 
   const [step, setStep] = useState(0)
   const [loadingLookups, setLoadingLookups] = useState(true)
@@ -119,18 +121,35 @@ export function Create() {
     setSubmitError('')
     setSubmitting(true)
     const tracking = `WEB-${Date.now().toString().slice(-8)}`
+    // The confidentiality choice maps to whether the citizen's name is shared.
+    const citizenName =
+      conf === 'anonymous'
+        ? 'Anonyme'
+        : (session?.username as string) || 'Citoyen'
     const payload: Record<string, unknown> = {
       description,
       category: category!.id,
       issue_type: issueType!.id,
       issue_sub_type: subType!.id,
-      contact_medium: conf === 'anonymous' ? 'anonymous' : 'web',
+      // Backend MEDIUM_CHOICES are: anonymous | facilitator | channel-alert.
+      contact_medium: 'anonymous',
+      contact_information: '',
       tracking_code: tracking,
       intake_date: occurDate
         ? new Date(occurDate).toISOString()
         : new Date().toISOString(),
       administrative_region: region!.id,
       ongoing_issue: false,
+      // reporter is required by IssueCreateSerializer.
+      reporter: session?.user_id,
+      // create() reads these citizen keys directly, so all must be present.
+      citizen: {
+        name: citizenName,
+        age_group: null,
+        type: null,
+        group: null,
+        group_2: null,
+      },
     }
     if (component) payload.component = component.id
     if (subComponent) payload.sub_component = subComponent.id
